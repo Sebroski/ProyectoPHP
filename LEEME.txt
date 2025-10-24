@@ -1,0 +1,101 @@
+Sistema de Registro de Productos
+
+---
+
+Tecnologías Utilizadas
+
+* **Frontend:**
+    * HTML
+    * CSS
+    * JavaScript
+* **Backend:**
+    * PHP 8.x (Puro, sin frameworks)
+* **Base de Datos:**
+    * PostgreSQL Ver 18.0-2
+
+---
+
+Prerrequisitos
+
+Antes de comenzar, asegurarse de tener instalado el siguiente software:
+
+1.  **XAMPP**: Para el servidor web Apache y PHP.
+    * [Descargar XAMPP](https://www.apachefriends.org/es/index.html)
+2.  **PostgreSQL**: Para la base de datos.
+    * [Descargar PostgreSQL](https://www.postgresql.org/download/)
+
+---
+
+1. Instalación y Configuración de la Base de Datos
+
+El primer paso es tener la base de datos lista y funcionando.
+
+1.  **Instalar PostgreSQL**: Sigue el instalador. Durante el proceso, te pedirá establecer una contraseña para el superusuario (`postgres`). En mi caso puse "pollo2001" y así estarán en los archivos entregados en el repositorio.
+2.  **Crear la Base de Datos**:
+    * Abrir la herramienta **pgAdmin** (se instala junto con PostgreSQL).
+    * Conéctate al servidor (se pedirá la contraseña que se acaba de crear).
+    * En el panel izquierdo, hacer clic derecho en `Databases` > `Create` > `Database...`.
+    * Nombrar la base de datos (en esta caso "productos_db") y guardar.
+3.  **Crear las Tablas**:
+    * Seleccionar la nueva base de datos ("productos_db").
+    * Abre la herramienta de consultas (`Tools` > `Query Tool`).
+    * Copiar todo el contenido del archivo `database.sql` de este proyecto.
+    * Pegar el script en la ventana de consultas y ejecutar.
+    * Esto creará todas las tablas (`tbl_productos`, `tbl_bodegas`, etc.) e insertará los datos iniciales.
+
+---
+
+## 2. Configuración de PHP (XAMPP)
+
+1.  Abrir el **Panel de Control de XAMPP**.
+2.  Detener el servicio de **Apache** (si está corriendo).
+3.  Al lado del módulo "Apache", hacer clic en el botón `Config`.
+4.  Selecciona el archivo `PHP (php.ini)`. Se abrirá en un editor de texto.
+5.  Buscar la línea:
+    `;extension=pdo_pgsql`
+6.  **Borra el punto y coma (`;`)** del inicio para descomentar la línea. Debe quedar así:
+    `extension=pdo_pgsql`
+7.  Guarda y cierra el archivo `php.ini`.
+
+---
+
+## 3. Instalación y Set Up del Proyecto
+
+Ahora, colocaremos los archivos del proyecto en el servidor web.
+
+1.  **Clonar o Copiar los Archivos**:
+    * Ir a la carpeta de instalación de XAMPP (usualmente `C:\xampp`).
+    * Navegar a la carpeta `htdocs`.
+    * Crear una nueva carpeta para el proyecto, en este caso: `proyecto_productos`.
+    * Copiar todos los archivos del proyecto (`index.html`, `style.css`, `app.js`, `api.php`, `db_config.php`) dentro de `C:\xampp\htdocs\proyecto_productos\`.
+2.  **Configurar la Conexión**:
+    * Abrir el archivo `db_config.php` con un editor de código.
+    * Modifica las constantes con tus credenciales de PostgreSQL (Esto viene ya hecho si se copia y pega el repositorio con git clone):
+
+    ```php
+    <?php
+    // Configuración de la Base de Datos (PostgreSQL)
+    define('DB_HOST', 'localhost');
+    define('DB_PORT', '5432'); // Puerto por defecto de PostgreSQL
+    define('DB_NAME', 'productos_db');
+    define('DB_USER', 'postgres');   
+    define('DB_PASS', 'pollo2001'); 
+    
+    // ... resto del archivo ...
+    ?>
+    ```
+
+---
+
+## 4. Ejecución de la Aplicación
+
+1.  Abrir el **Panel de Control de XAMPP**.
+2.  Iniciar (Start) el servicio de **Apache**.
+3.  Abrir navegador web (Chrome, Firefox, etc.).
+4.  En la barra de direcciones, navegar a la URL del proyecto:
+
+    **`http://localhost/proyecto_productos/`**
+
+    *(Si se le puso otro nombre a la carpeta en `htdocs`, usarlo en la URL).*
+
+5.  ¡Listo! El formulario debería cargar, y los campos "Bodega" y "Moneda" deberían llenarse automáticamente desde la base de datos.

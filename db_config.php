@@ -2,9 +2,9 @@
 // Configuración de la Base de Datos (PostgreSQL)
 define('DB_HOST', 'localhost');
 define('DB_PORT', '5432'); // Puerto por defecto de PostgreSQL
-define('DB_NAME', 'productos_db'); // El nombre que le diste
-define('DB_USER', 'postgres');     // El usuario por defecto
-define('DB_PASS', 'pollo2001'); // La contraseña que pusiste al instalar PostgreSQL
+define('DB_NAME', 'productos_db');
+define('DB_USER', 'postgres');   
+define('DB_PASS', 'pollo2001'); 
 function getDBConnection() {
     $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
     

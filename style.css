@@ -97,7 +97,8 @@ textarea {
 /* Estilo para alinear label con checkbox */
 .checkbox-group input[type="checkbox"] {
     width: auto;
-    margin-right: -10px; /* Acerca el label */
+    margin-right: -10px;
+    accent-color: #007bff;
 }
 .checkbox-group label {
     font-weight: normal;

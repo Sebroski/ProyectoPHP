@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bodegaSelect.addEventListener('change', () => {
         const bodegaId = bodegaSelect.value;
         // Limpiar y deshabilitar sucursales
-        sucursalSelect.innerHTML = '<option value="">Seleccione una sucursal...</option>';
+        sucursalSelect.innerHTML = '<option value=""></option>';
         sucursalSelect.disabled = true;
 
         if (bodegaId) {
@@ -58,23 +58,34 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault(); // Evitar el envío tradicional
         
-        // Deshabilitar botón para evitar doble envío
         saveButton.disabled = true;
-        saveButton.textContent = 'Guardando...';
+        saveButton.textContent = 'Validando...';
         hideFormMessage();
 
-        // 1. Validar en el cliente
-        const validationErrors = await validateForm();
+        // 1. Validar en el cliente (sincrónico, con alertas)
+        const syncValidationPassed = validateForm();
         
-        if (validationErrors.length > 0) {
-            // Mostrar errores de validación
-            showFormMessage('error', 'Por favor corrija los siguientes errores:', validationErrors);
+        if (!syncValidationPassed) {
+            // Validación falló. El alert() ya se mostró en validateForm()
             saveButton.disabled = false;
             saveButton.textContent = 'Guardar Producto';
             return;
         }
 
-        // 2. Si la validación es exitosa, enviar por AJAX
+        // 2. Validación Asíncrona (Unicidad del Código)
+        const codigo = document.getElementById('codigo').value.trim();
+        const isUnique = await checkCodigoUnico(codigo);
+
+        if (!isUnique) {
+            alert("El código del producto ya está registrado.");
+            saveButton.disabled = false;
+            saveButton.textContent = 'Guardar Producto';
+            return;
+        }
+
+        // 3. Si todo es exitoso, enviar por AJAX
+        saveButton.textContent = 'Guardando...';
+
         try {
             const formData = new FormData(form);
             const response = await fetch('api.php', {
@@ -86,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
+            // 4. Respuesta al Usuario
             if (result.status === 'success') {
                 showFormMessage('success', result.message);
                 form.reset(); // Limpiar formulario
@@ -97,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFormMessage('error', 'Error de validación del servidor:', result.messages);
             } else {
                 // Otros errores del servidor
-                showFormMessage('error', result.message);
+                showFormMessage('error', result.message || 'Ocurrió un error desconocido.');
             }
 
         } catch (error) {
@@ -112,66 +124,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Funciones de Validación (Cliente) ---
 
-    async function validateForm() {
-        const errors = [];
-        const codigo = document.getElementById('codigo').value;
-        const nombre = document.getElementById('nombre').value;
-        const precio = document.getElementById('precio').value;
-        const descripcion = document.getElementById('descripcion').value;
+    /**
+     * Valida el formulario de forma sincrónica.
+     * Muestra un alert() y retorna false al primer error encontrado.
+     * Retorna true si todas las validaciones pasan.
+     */
+    function validateForm() {
+        // Obtener valores (usamos trim() para eliminar espacios en blanco)
+        const codigo = document.getElementById('codigo').value.trim();
+        const nombre = document.getElementById('nombre').value.trim();
+        const bodega = bodegaSelect.value;
+        const sucursal = sucursalSelect.value;
+        const moneda = monedaSelect.value;
+        const precio = document.getElementById('precio').value.trim();
+        const descripcion = document.getElementById('descripcion').value.trim();
         const materialesChecked = document.querySelectorAll('input[name="materiales[]"]:checked').length;
 
-        // Validaciones obligatorias
-        if (!codigo) errors.push('El código es obligatorio.');
-        if (!nombre) errors.push('El nombre es obligatorio.');
-        if (!bodegaSelect.value) errors.push('La bodega es obligatoria.');
-        if (!sucursalSelect.value) errors.push('La sucursal es obligatoria.');
-        if (!monedaSelect.value) errors.push('La moneda es obligatoria.');
-        if (!precio) errors.push('El precio es obligatorio.');
-        if (!descripcion) errors.push('La descripción es obligatoria.');
-
-        // Código: 5-15 chars, alfanumérico
-        if (codigo && (codigo.length < 5 || codigo.length > 15)) {
-            errors.push('El código debe tener entre 5 y 15 caracteres.');
+        // 1. Código del Producto
+        if (codigo === "") {
+            alert("El código del producto no puede estar en blanco.");
+            return false;
         }
-        if (codigo && !/^[a-zA-Z0-9]+$/.test(codigo)) {
-            errors.push('El código solo debe contener letras y números.');
+        if (codigo.length < 5 || codigo.length > 15) {
+            alert("El código del producto debe tener entre 5 y 15 caracteres.");
+            return false;
+        }
+        // Regex: al menos una letra, al menos un número, y solo caracteres alfanuméricos
+        const hasLetter = /[A-Za-z]/.test(codigo);
+        const hasNumber = /\d/.test(codigo);
+        const hasOnlyAlphanumeric = /^[A-Za-z\d]+$/.test(codigo);
+        
+        if (!hasOnlyAlphanumeric || !hasLetter || !hasNumber) {
+            alert("El código del producto debe contener letras y números");
+            return false;
+        }
+        // La unicidad se comprueba de forma asíncrona fuera de esta función
+
+        // 2. Nombre del Producto
+        if (nombre === "") {
+            alert("El nombre del producto no puede estar en blanco.");
+            return false;
+        }
+        if (nombre.length < 2 || nombre.length > 50) {
+            alert("El nombre del producto debe tener entre 2 y 50 caracteres.");
+            return false;
         }
         
-        // Código: Validación Asíncrona de Unicidad
-        if (codigo && errors.length === 0) { // Solo chequear si el formato es correcto
-            const isUnique = await checkCodigoUnico(codigo);
-            if (!isUnique) {
-                errors.push('El código ingresado ya existe.');
-            }
+        // 3. Bodega
+        if (bodega === "") {
+            alert("Debe seleccionar una bodega.");
+            return false;
         }
 
-        // Nombre: 2-50 chars
-        if (nombre && (nombre.length < 2 || nombre.length > 50)) {
-            errors.push('El nombre debe tener entre 2 y 50 caracteres.');
+        // 4. Sucursal (Depende de bodega)
+        if (sucursal === "") {
+            alert("Debe seleccionar una sucursal para la bodega seleccionada.");
+            return false;
         }
 
-        // Precio: Número positivo, hasta 2 decimales
-        if (precio && (!/^\d+(\.\d{1,2})?$/.test(precio) || parseFloat(precio) <= 0)) {
-            errors.push('El precio debe ser un número positivo (ej: 1500 o 1500.50).');
+        // 5. Moneda
+        if (moneda === "") {
+            alert("Debe seleccionar una moneda para el producto.");
+            return false;
         }
 
-        // Materiales: Al menos 2
+        // 6. Precio del Producto
+        if (precio === "") {
+            alert("El precio del producto no puede estar en blanco.");
+            return false;
+        }
+        // Regex: número positivo con hasta dos decimales
+        const precioRegex = /^\d+(\.\d{1,2})?$/;
+        if (!precioRegex.test(precio) || parseFloat(precio) <= 0) {
+            alert("El precio del producto debe ser un número positivo con hasta dos decimales.");
+            return false;
+        }
+
+        // 7. Material del Producto
         if (materialesChecked < 2) {
-            errors.push('Debe seleccionar al menos dos materiales.');
+            alert("Debe seleccionar al menos dos materiales para el producto.");
+            return false;
         }
 
-        // Descripción: 10-1000 chars
-        if (descripcion && (descripcion.length < 10 || descripcion.length > 1000)) {
-            errors.push('La descripción debe tener entre 10 y 1000 caracteres.');
+        // 8. Descripción del Producto
+        if (descripcion === "") {
+            alert("La descripción del producto no puede estar en blanco.");
+            return false;
+        }
+        if (descripcion.length < 10 || descripcion.length > 1000) {
+            alert("La descripción del producto debe tener entre 10 y 1000 caracteres.");
+            return false;
         }
 
-        return errors;
+        // Si todas las validaciones pasan
+        return true;
     }
 
     // Función auxiliar para chequear código (AJAX)
     async function checkCodigoUnico(codigo) {
         try {
             const response = await fetch(`api.php?action=check_codigo&codigo=${codigo}`);
+            if (!response.ok) {
+                 console.error('Error de red al verificar código');
+                 return false; // Asumir no único si hay error de red
+            }
             const data = await response.json();
             return data.isUnique;
         } catch (error) {
@@ -180,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Funciones de UI (Mensajes) ---
+    // --- Funciones de UI (Mensajes de éxito/error del servidor) ---
 
     function showFormMessage(type, mainMessage, details = []) {
         formMessages.className = type; // 'success' o 'error'
