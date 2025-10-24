@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Producto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="form-container">
+        <h1>Formulario de Producto</h1>
+
+        <div id="form-messages"></div>
+
+        <form id="productForm">
+            <div class="form-group">
+                <label for="codigo">Código</label>
+                <input type="text" id="codigo" name="codigo">
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre">
+            </div>
+
+            <div class="form-group">
+                <label for="bodega">Bodega</label>
+                <select id="bodega" name="bodega">
+                    <option value="">Seleccione una bodega...</option>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label for="sucursal">Sucursal</label>
+                <select id="sucursal" name="sucursal" disabled>
+                    <option value="">Seleccione una sucursal...</option>
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label for="moneda">Moneda</label>
+                <select id="moneda" name="moneda">
+                    <option value="">Seleccione una moneda...</option>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label for="precio">Precio</label>
+                <input type="text" id="precio" name="precio" placeholder="Ej: 1500.00">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Material del Producto (Mínimo 2)</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="mat-plastico" name="materiales[]" value="Plástico">
+                    <label for="mat-plastico">Plástico</label>
+                    
+                    <input type="checkbox" id="mat-metal" name="materiales[]" value="Metal">
+                    <label for="mat-metal">Metal</label>
+                    
+                    <input type="checkbox" id="mat-madera" name="materiales[]" value="Madera">
+                    <label for="mat-madera">Madera</label>
+                    
+                    <input type="checkbox" id="mat-vidrio" name="materiales[]" value="Vidrio">
+                    <label for="mat-vidrio">Vidrio</label>
+                    
+                    <input type="checkbox" id="mat-textil" name="materiales[]" value="Textil">
+                    <label for="mat-textil">Textil</label>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <button type="submit" id="saveButton">Guardar Producto</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

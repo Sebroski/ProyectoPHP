@@ -1,0 +1,154 @@
+/* Estilos Generales */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Contenedor del Formulario */
+.form-container {
+    width: 100%;
+    max-width: 800px;
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+/* Layout del Formulario (CSS Grid) */
+#productForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 25px; /* Espacio vertical y horizontal */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1; /* Ocupa ambas columnas */
+}
+
+/* Estilos de Campos */
+label {
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input[type="text"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #1aab8a;
+    box-shadow: 0 0 0 2px rgba(26, 171, 138, 0.2);
+}
+
+select[disabled] {
+    background-color: #f4f4f4;
+    cursor: not-allowed;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Grupo de Checkboxes */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+/* Estilo para alinear label con checkbox */
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: -10px; /* Acerca el label */
+}
+.checkbox-group label {
+    font-weight: normal;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+/* Botón "Guardar Producto" */
+#saveButton {
+    background-color: #1aab8a;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+#saveButton:hover {
+    background-color: #158a6f;
+}
+
+#saveButton:disabled {
+    background-color: #a6d9ca;
+    cursor: wait;
+}
+
+/* Mensajes de feedback */
+#form-messages {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 15px;
+    display: none; /* Oculto por defecto */
+}
+
+#form-messages.success {
+    background-color: #e6f7f2;
+    color: #0e664b;
+    border: 1px solid #a6d9ca;
+    display: block;
+}
+
+#form-messages.error {
+    background-color: #fdecea;
+    color: #a42828;
+    border: 1px solid #f7baba;
+    display: block;
+}
