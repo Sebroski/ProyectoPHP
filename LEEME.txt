@@ -9,7 +9,7 @@ Tecnologías Utilizadas
     * CSS
     * JavaScript
 * **Backend:**
-    * PHP 8.x (Puro, sin frameworks)
+    * PHP 8.2.12
 * **Base de Datos:**
     * PostgreSQL Ver 18.0-2
 
