@@ -100,6 +100,97 @@ Ahora, colocaremos los archivos del proyecto en el servidor web.
 
 5.  ¡Listo! El formulario debería cargar, y los campos "Bodega" y "Moneda" deberían llenarse automáticamente desde la base de datos.
 
+// --- 2. LÓGICA DE ENRUTAMIENTO (API) ---
+$action = $_REQUEST['action'] ?? null;
+
+if ($action) {
+    // ESTAMOS EN MODO API (Ajax)
+    // Ajuste para ISO-8859-1
+    header('Content-Type: application/json; charset=iso-8859-1');
+
+    // --- Funciones de la API ---
+    function getComunas($dbconn) {
+        $region_id = (int)($_GET['region_id'] ?? 0);
+        if ($region_id <= 0) {
+            echo json_encode([]);
+            return;
+        }
+        $query = "SELECT id, nombre FROM comunas WHERE region_id = $1 ORDER BY nombre ASC";
+        $result = pg_query_params($dbconn, $query, [$region_id]);
+        $comunas = pg_fetch_all($result);
+        echo json_encode($comunas ?: []);
+    }
+
+    function submitForm($dbconn) {
+        // 1. Recolección de datos
+        $nombre_apellido = trim($_POST['nombre_apellido'] ?? '');
+        $alias = trim($_POST['alias'] ?? '');
+        $rut = trim($_POST['rut'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $region_id = (int)($_POST['region_id'] ?? 0);
+        $comuna_id = (int)($_POST['comuna_id'] ?? 0);
+        $candidato_id = (int)($_POST['candidato_id'] ?? 0);
+        $como_se_entero = $_POST['como_se_entero'] ?? [];
+
+        // 2. Validación del Servidor
+        if (empty($nombre_apellido) || empty($alias) || empty($rut) || empty($email) || 
+            $region_id <= 0 || $comuna_id <= 0 || $candidato_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Error: Todos los campos obligatorios deben ser completados.']);
+            return;
+        }
+        if (strlen($alias) <= 5 || !preg_match('/^[a-zA-Z0-9]+$/', $alias)) {
+            echo json_encode(['success' => false, 'message' => 'Error: El alias debe tener más de 5 caracteres (letras y números).']);
+            return;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+             echo json_encode(['success' => false, 'message' => 'Error: El formato del email no es válido.']);
+            return;
+        }
+        if (count($como_se_entero) < 2) {
+            echo json_encode(['success' => false, 'message' => 'Error: Debe seleccionar al menos dos opciones en "Cómo se enteró".']);
+            return;
+        }
+
+        $rut_limpio = preg_replace('/[.-]/', '', $rut);
+        $check_rut_query = "SELECT COUNT(*) AS total FROM votos WHERE rut = $1";
+        $check_rut_result = pg_query_params($dbconn, $check_rut_query, [$rut_limpio]);
+        $rut_count = pg_fetch_assoc($check_rut_result)['total'];
+
+        if ($rut_count > 0) {
+            echo json_encode(['success' => false, 'message' => 'Error: Este RUT ya ha emitido un voto.']);
+            return;
+        }
+
+        // 3. Inserción
+        $como_se_entero_str = implode(', ', $como_se_entero);
+        $insert_query = "INSERT INTO votos 
+            (nombre_apellido, alias, rut, email, region_id, comuna_id, candidato_id, como_se_entero) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
+        $params = [$nombre_apellido, $alias, $rut_limpio, $email, $region_id, $comuna_id, $candidato_id, $como_se_entero_str];
+        $insert_result = pg_query_params($dbconn, $insert_query, $params);
+
+        if ($insert_result) {
+            echo json_encode(['success' => true, 'message' => '¡Voto registrado exitosamente!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al guardar en la base de datos: ' . pg_last_error($dbconn)]);
+        }
+    }
+
+    // --- Switch de acciones de la API ---
+    switch ($action) {
+        case 'getComunas':
+            getComunas($dbconn);
+            break;
+        case 'submitForm':
+            submitForm($dbconn);
+            break;
+        default:
+            echo json_encode(['success' => false, 'message' => 'Acción no válida']);
+    }
+
+    pg_close($dbconn);
+    exit
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
